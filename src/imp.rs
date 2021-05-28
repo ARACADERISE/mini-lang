@@ -118,6 +118,7 @@ impl LFuncs for Lexer
     fn pickup_keyword(&mut self) -> String
     {
         let mut keyword: String = String::new();
+
         loop
         {
             match self.info.content.chars().nth(self.index)
@@ -138,6 +139,34 @@ impl LFuncs for Lexer
         return keyword;
     }
 
+    fn pickup_str(&mut self) -> String
+    {
+        let mut str_val: String = String::new();
+
+        if self.info.content.chars().nth(self.index).unwrap() == '"'
+        {
+            self.index += 1;
+        }
+
+        loop {
+            match self.info.content.chars().nth(self.index)
+            {
+                Some(c) => {
+                    if(c == '"')
+                    {
+                        //self.index += 1;
+                        break;
+                    }
+                    str_val.push(c);
+                    self.index += 1;
+                },
+                None => break
+            }
+        }
+
+        return str_val;
+    }
+
     fn lex(&mut self) -> Result<Type, LError>
     {
         loop {
@@ -156,8 +185,12 @@ impl LFuncs for Lexer
                     return Ok(self.advance_with_token(Type::Equals, '='.to_string()));
                 },
                 Some(';') => {
-                    return Ok(self.advance_with_token(Type::Semi, ';'.to_string()))
+                    return Ok(self.advance_with_token(Type::Semi, ';'.to_string()));
                 }
+                Some('"') => {
+                    let _str = self.pickup_str();
+                    return Ok(self.advance_with_token(Type::Str, _str));
+                },
                 Some(',') => {
                     return Ok(self.advance_with_token(Type::Comma, ','.to_string()));
                 },
@@ -293,22 +326,42 @@ impl PFuncs for Parser
         Ok(self.clone())
     }
 
+    fn parse_print(&mut self) -> Result<Parser, PError>
+    {
+        self.get_next_token();
+
+        match self.lex.token
+        {
+            Type::Str => {
+                println!("{}", self.lex.token_val);
+            },
+            _ => return Err(PError::unexpected_token(self.lex.token.clone()))
+        }
+
+        Ok(self.clone())
+    }
+
     fn parse(&mut self, lexer: Lexer) -> Result<Parser, PError>
     {
         self.lex = lexer;
 
-        match self.lex.token
-        {
-            Type::K_LET => {
-                match self.parse_var_def() {
-                    Ok(_) => {},
-                    Err(t) => return Err(t),
-                }
-            },
-            Type::K_PRINT => {
-                println!("Printing!");
-            },
-            _ => {}
+        loop {
+            match self.lex.token
+            {
+                Type::K_LET => {
+                    match self.parse_var_def() {
+                        Ok(_) => {},
+                        Err(t) => return Err(t),
+                    }
+                },
+                Type::K_PRINT => {
+                    match self.parse_print() {
+                        Ok(_) => {},
+                        Err(e) => return Err(e)
+                    }
+                },
+                _ => break
+            }
         }
 
         Ok(self.clone())

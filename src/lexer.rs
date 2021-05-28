@@ -13,6 +13,7 @@ pub enum Type
     Equals,
     K_LET,
     K_PRINT,
+    Str,
     VarName,
     T_LB, // {
     T_RB, // }
@@ -41,6 +42,7 @@ pub trait LFuncs
     fn advance_with_token(&mut self, token: Type, val: String) -> Type;
     fn pickup_keyword(&mut self) -> String;
     fn skip_whitespace(&mut self);
+    fn pickup_str(&mut self) -> String;
     fn lex(&mut self) -> Result<Type, LError>;
 }
 

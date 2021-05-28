@@ -4,4 +4,7 @@ let arr = {
 let sec = {
 	0, 1, 2, 3
 };
-print
+print "HEY"
+print "This is my language :)"
+
+print "OH YA :D"
