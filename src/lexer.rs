@@ -1,0 +1,27 @@
+use super::starter;
+use starter::FileInfo;
+
+#[allow(non_camel_case_types)]
+#[allow(dead_code)] // get rid of errors, for now
+#[derive(Debug, Clone)]
+pub enum Type
+{
+    Def,
+    L_SB, // {
+    R_SB, // }
+    NUM,  // Number,
+    EOF,  // \0
+}
+
+#[derive(Debug, Clone)]
+pub struct Lexer
+{
+    pub info: FileInfo,
+    pub token: Type
+}
+
+pub trait LFuncs
+{
+    fn new_lexer(info: FileInfo) -> Self;
+    fn lex(&mut self) -> Type;
+}
