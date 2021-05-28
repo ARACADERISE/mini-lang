@@ -1,0 +1,13 @@
+[package]
+name = "jpg_decoder_rust"
+version = "0.1.0"
+authors = ["ARACADERISE <t.targetyt@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[[bin]]
+name = "jpg_decoder_rust"
+path = "main.rs"
