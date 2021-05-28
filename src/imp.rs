@@ -297,25 +297,18 @@ impl PFuncs for Parser
     {
         self.lex = lexer;
 
-        loop {
-            match self.lex.token
-            {
-                Type::K_LET => {
-                    match self.parse_var_def() {
-                        Ok(_) => {
-                        },
-                        Err(t) => {
-                            return Err(t);
-                        }
-                    }
-                    continue;
-                },
-                Type::K_PRINT => {
-                    println!("Printing!");
-                    break;
-                },
-                _ => break
-            }
+        match self.lex.token
+        {
+            Type::K_LET => {
+                match self.parse_var_def() {
+                    Ok(_) => {},
+                    Err(t) => return Err(t),
+                }
+            },
+            Type::K_PRINT => {
+                println!("Printing!");
+            },
+            _ => {}
         }
 
         Ok(self.clone())
