@@ -24,14 +24,14 @@ fn main()
 
                             loop {
                                 match lexer.lex() {
-                                    Ok(mut token) => {
-                                        token = Type::EOF;
-                                        lexer.token = token.clone();
+                                    Ok(token) => {
                                         match token {
                                             Type::EOF => break,
-                                            _ => {} // should never get here
+                                            _ => {
+                                                println!("{:?}", token);
+                                            } // should never get here
                                         }
-                                        break;
+                                        //break;
                                     }
                                     Err(token) => panic!("{:?}", token)
                                 }

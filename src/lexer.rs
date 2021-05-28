@@ -7,8 +7,10 @@ use starter::FileInfo;
 pub enum Type
 {
     Def,
-    L_SB, // {
-    R_SB, // }
+    Tab,
+    Comma,
+    T_LB, // {
+    T_RB, // }
     NUM,  // Number,
     EOF,  // \0
 }
@@ -23,12 +25,15 @@ pub enum LError
 pub struct Lexer
 {
     pub info: FileInfo,
-    pub token: Type
+    pub token: Type,
+    pub index: usize,
 }
 
 pub trait LFuncs
 {
     fn new_lexer(info: FileInfo) -> Self;
+    fn advance_with_token(&mut self, token: Type) -> Type;
+    fn skip_whitespace(&mut self);
     fn lex(&mut self) -> Result<Type, LError>;
 }
 

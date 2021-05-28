@@ -88,13 +88,56 @@ impl LFuncs for Lexer
     {
         Self {
             info: info,
-            token: Type::Def
+            token: Type::Def,
+            index: 0
         }
+    }
+
+    fn advance_with_token(&mut self, token: Type) -> Type
+    {
+        self.index += 1;
+        return token;
+    }
+
+    fn skip_whitespace(&mut self)
+    {
+        self.index += 1;
     }
 
     fn lex(&mut self) -> Result<Type, LError>
     {
-        Ok(Type::Def)
+        let last_char = self.info.content.chars().last().unwrap();
+
+        loop {
+            match self.info.content.chars().nth(self.index) {
+                Some(' ') => {
+                    self.skip_whitespace();
+                    continue;
+                },
+                Some('{') => {
+                    return Ok(self.advance_with_token(Type::T_LB));
+                }
+                Some('}') => {
+                    return Ok(self.advance_with_token(Type::T_RB));
+                }
+                Some(',') => {
+                    return Ok(self.advance_with_token(Type::Comma));
+                }
+                Some('\t') => {
+                    return Ok(self.advance_with_token(Type::Tab));
+                }
+                None => break,
+                _ => {
+                    match self.info.content.chars().nth(self.index).unwrap().is_digit(10) {
+                        true => return Ok(self.advance_with_token(Type::NUM)),
+                        false => {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        Ok(Type::EOF)
     }
 }
 
