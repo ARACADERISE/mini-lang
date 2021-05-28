@@ -112,7 +112,10 @@ impl LFuncs for Lexer
 
     fn skip_whitespace(&mut self)
     {
-        self.index += 1;
+        while self.info.content.chars().nth(self.index).unwrap() == ' '
+        {
+            self.index += 1;
+        }
     }
 
     fn pickup_keyword(&mut self) -> String
