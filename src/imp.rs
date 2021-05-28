@@ -1,6 +1,13 @@
 // Importing of the code
 use super::starter;
 use super::lexer;
+use super::parser;
+
+// Parser
+use parser::Parser;
+use parser::PFuncs;
+use parser::PError;
+use parser::PErrorFuncs;
 
 // Lexer
 use lexer::Lexer;
@@ -144,6 +151,9 @@ impl LFuncs for Lexer
                 Some('=') => {
                     return Ok(self.advance_with_token(Type::Equals, '='.to_string()));
                 },
+                Some(';') => {
+                    return Ok(self.advance_with_token(Type::Semi, ';'.to_string()))
+                }
                 Some(',') => {
                     return Ok(self.advance_with_token(Type::Comma, ','.to_string()));
                 }
@@ -173,17 +183,15 @@ impl LFuncs for Lexer
                                 let k = self.pickup_keyword();
 
                                 match k.as_str() {
-                                    "let" => return(Ok(self.advance_with_token(Type::K_LET, k))),
-                                    _ => return(Ok(self.advance_with_token(Type::VarName, k)))
+                                    "let" => return Ok(self.advance_with_token(Type::K_LET, k)),
+                                    _ => return Ok(self.advance_with_token(Type::VarName, k))
                                 }
-                                break;
                             }
                         }
                     }
                 }
             }
         }
-        Ok(Type::EOF) // should never get here.
     }
 }
 
@@ -192,5 +200,109 @@ impl LErrorFuncs for LError
     fn token_error(err: Type) -> LError
     {
         LError::TokenErr(err)
+    }
+}
+
+impl PErrorFuncs for PError
+{
+    fn unexpected_token(token: Type) -> PError
+    {
+        PError::UnexpectedToken(token)
+    }
+}
+
+impl PFuncs for Parser
+{
+    fn new_parser(lexer: Lexer) -> Self
+    {
+        Self {
+            lex: lexer
+        }
+    }
+
+    fn get_next_token(&mut self)
+    {
+        match self.lex.lex()
+        {
+            Ok(_) => {},
+            Err(e) => panic!("{:?}", e)
+        }
+    }
+
+    fn parse_var_def(&mut self) -> Result<Parser, PError>
+    {
+        if self.lex.token_val == "let"
+        {
+            self.get_next_token();
+
+            match self.lex.token
+            {
+                Type::VarName => {
+                    self.get_next_token()
+                },
+                _ => return Err(PError::unexpected_token(self.lex.token.clone()))
+            }
+
+            if self.lex.token_val == "="
+            {
+                self.get_next_token();
+
+                match self.lex.token
+                {
+                    Type::T_LB => {
+                        self.get_next_token();
+
+                        loop {
+                            match self.lex.token
+                            {
+                                Type::NUM => {
+                                    self.get_next_token();
+                                },
+                                Type::Comma => {
+                                    self.get_next_token();
+                                },
+                                Type::T_RB => {
+                                    break;
+                                }
+                                _ => return Err(PError::unexpected_token(self.lex.token.clone()))
+                            }
+                        }
+                        self.get_next_token();
+
+                        match self.lex.token
+                        {
+                            Type::Semi => {
+                                return Ok(self.clone());
+                            },
+                            Type::EOF => {
+                                return Ok(self.clone());
+                            },
+                            _ => return Err(PError::unexpected_token(self.lex.token.clone()))
+                        }
+                    },
+                    _ => return Err(PError::unexpected_token(self.lex.token.clone())),
+                }
+
+            }
+        }
+        Ok(self.clone())
+    }
+
+    fn parse(&mut self, lexer: Lexer) -> Result<Parser, PError>
+    {
+        self.lex = lexer;
+
+        match self.lex.token
+        {
+            Type::K_LET => {
+                match self.parse_var_def() {
+                    Ok(t) => return Ok(t),
+                    Err(t) => return Err(t)
+                }
+            },
+            _ => {}
+        }
+
+        Ok(self.clone())
     }
 }

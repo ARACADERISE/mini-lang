@@ -9,6 +9,10 @@ use lexer::Lexer;
 use lexer::LFuncs;
 use lexer::Type;
 
+use src::parser;
+use parser::Parser;
+use parser::PFuncs;
+
 #[allow(non_snake_case)]
 fn main()
 {
@@ -21,22 +25,29 @@ fn main()
                     match T.read_file() {
                         Ok(I) => {
                             let mut lexer = Lexer::new_lexer(I.clone());
+                            let mut parser = Parser::new_parser(lexer.clone());
 
                             loop {
                                 match lexer.lex() {
                                     Ok(token) => {
-                                        println!("{:?} -> {}", token, lexer.token_val);
                                         match token {
                                             Type::EOF => break,
-                                            _ => {}
+                                            _ => {
+                                                match parser.parse(lexer.clone())
+                                                {
+                                                    Ok(p) => {
+                                                        println!("Successfull: {:?}", p);
+                                                    }
+                                                    Err(e) => panic!("{:?}", e)
+                                                }
+                                                break;
+                                            }
                                         }
                                         //break;
                                     }
                                     Err(token) => panic!("{:?}", token)
                                 }
                             }
-
-                            println!("{:?}", lexer);
                         },
                         Err(E) => panic!("{:?}", E)
                     }

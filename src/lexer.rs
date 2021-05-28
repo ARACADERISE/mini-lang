@@ -8,6 +8,7 @@ pub enum Type
 {
     Def,
     Tab,
+    Semi,
     Comma,
     Equals,
     K_LET,
