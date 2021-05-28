@@ -367,6 +367,21 @@ impl PFuncs for Parser
             }
         }
 
-        Ok(self.clone())
+        // Error checking
+        self.get_next_token();
+
+        match self.lex.token {
+            Type::EOF => {
+                return Ok(self.clone());
+            },
+            _ => {
+                match self.lex.token {
+                    Type::K_LET => return self.parse(self.lex.clone()),
+                    Type::K_PRINT => return self.parse(self.lex.clone()),
+                    _ => {}
+                }
+                return Err(PError::unexpected_token(self.lex.token.clone()))
+            }
+        }
     }
 }

@@ -36,24 +36,24 @@ fn main()
                                                 match parser.parse(lexer.clone())
                                                 {
                                                     Ok(mut p) => {
-                                                        
+                                                        lexer = p.lex.clone();
                                                     },
-                                                    Err(e) => panic!("{:?}", e)
+                                                    Err(e) => println!("{:?}", e)
                                                 }
                                             }
                                         }
                                         //break;
-                                    }
-                                    Err(token) => panic!("{:?}", token)
+                                    },
+                                    Err(token) => println!("{:?}", token)
                                 }
                             }
                         },
-                        Err(E) => panic!("{:?}", E)
+                        Err(E) => println!("{:?}", E)
                     }
                 },
-                Err(T) => panic!("{:?}", T)
+                Err(T) => println!("{:?}", T)
             }
         },
-        Err(t) => panic!("{:?}", t)
+        Err(t) => println!("{:?}", t)
     }
 }

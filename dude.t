@@ -1,10 +1,4 @@
-let arr = {
-	0, 0, 0, 0, 0, 0, 0, 0
+print "Hello, World"
+let arr = { 
+	0, 1, 2
 };
-let sec = {
-	0, 1, 2, 3
-};
-print "HEY"
-print "This is my language :)"
-
-print "OH YA :D"
