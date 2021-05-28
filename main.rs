@@ -25,11 +25,10 @@ fn main()
                             loop {
                                 match lexer.lex() {
                                     Ok(token) => {
+                                        println!("{:?} -> {}", token, lexer.token_val);
                                         match token {
                                             Type::EOF => break,
-                                            _ => {
-                                                println!("{:?}", token);
-                                            } // should never get here
+                                            _ => {}
                                         }
                                         //break;
                                     }

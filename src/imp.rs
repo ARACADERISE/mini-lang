@@ -89,13 +89,17 @@ impl LFuncs for Lexer
         Self {
             info: info,
             token: Type::Def,
+            token_val: String::new(),
             index: 0
         }
     }
 
-    fn advance_with_token(&mut self, token: Type) -> Type
+    fn advance_with_token(&mut self, token: Type, val: String) -> Type
     {
         self.index += 1;
+        self.token = token.clone();
+
+        self.token_val = val;
         return token;
     }
 
@@ -104,10 +108,27 @@ impl LFuncs for Lexer
         self.index += 1;
     }
 
+    fn pickup_keyword(&mut self) -> String
+    {
+        let mut keyword: String = String::new();
+        loop
+        {
+            if self.info.content.chars().nth(self.index).unwrap() != ' '
+            {
+                keyword.push(self.info.content.chars().nth(self.index).unwrap());
+            } else 
+            {
+                break;
+            }
+
+            self.index += 1;
+        }
+
+        return keyword;
+    }
+
     fn lex(&mut self) -> Result<Type, LError>
     {
-        let last_char = self.info.content.chars().last().unwrap();
-
         loop {
             match self.info.content.chars().nth(self.index) {
                 Some(' ') => {
@@ -115,29 +136,54 @@ impl LFuncs for Lexer
                     continue;
                 },
                 Some('{') => {
-                    return Ok(self.advance_with_token(Type::T_LB));
+                    return Ok(self.advance_with_token(Type::T_LB, '{'.to_string()));
                 }
                 Some('}') => {
-                    return Ok(self.advance_with_token(Type::T_RB));
-                }
+                    return Ok(self.advance_with_token(Type::T_RB, '}'.to_string()));
+                },
+                Some('=') => {
+                    return Ok(self.advance_with_token(Type::Equals, '='.to_string()));
+                },
                 Some(',') => {
-                    return Ok(self.advance_with_token(Type::Comma));
+                    return Ok(self.advance_with_token(Type::Comma, ','.to_string()));
                 }
                 Some('\t') => {
-                    return Ok(self.advance_with_token(Type::Tab));
+                    loop {
+                        self.index += 1;
+
+                        if self.info.content.chars().nth(self.index) != None
+                        {
+                            if self.info.content.chars().nth(self.index).unwrap() != ' '
+                            {
+                                break
+                            }
+                        }
+                    }
+                    continue;
                 }
-                None => break,
+                None => {
+                    return Ok(self.advance_with_token(Type::EOF, '\0'.to_string()));
+                }
                 _ => {
                     match self.info.content.chars().nth(self.index).unwrap().is_digit(10) {
-                        true => return Ok(self.advance_with_token(Type::NUM)),
+                        true => return Ok(self.advance_with_token(Type::NUM, self.info.content.chars().nth(self.index).unwrap().to_string())),
                         false => {
-                            break;
+                            if self.info.content.chars().nth(self.index).unwrap().is_alphabetic() == true
+                            {
+                                let k = self.pickup_keyword();
+
+                                match k.as_str() {
+                                    "let" => return(Ok(self.advance_with_token(Type::K_LET, k))),
+                                    _ => return(Ok(self.advance_with_token(Type::VarName, k)))
+                                }
+                                break;
+                            }
                         }
                     }
                 }
             }
         }
-        Ok(Type::EOF)
+        Ok(Type::EOF) // should never get here.
     }
 }
 

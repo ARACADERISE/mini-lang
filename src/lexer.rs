@@ -9,6 +9,9 @@ pub enum Type
     Def,
     Tab,
     Comma,
+    Equals,
+    K_LET,
+    VarName,
     T_LB, // {
     T_RB, // }
     NUM,  // Number,
@@ -27,12 +30,14 @@ pub struct Lexer
     pub info: FileInfo,
     pub token: Type,
     pub index: usize,
+    pub token_val: String
 }
 
 pub trait LFuncs
 {
     fn new_lexer(info: FileInfo) -> Self;
-    fn advance_with_token(&mut self, token: Type) -> Type;
+    fn advance_with_token(&mut self, token: Type, val: String) -> Type;
+    fn pickup_keyword(&mut self) -> String;
     fn skip_whitespace(&mut self);
     fn lex(&mut self) -> Result<Type, LError>;
 }
