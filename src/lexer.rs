@@ -13,6 +13,12 @@ pub enum Type
     EOF,  // \0
 }
 
+#[derive(Debug)]
+pub enum LError
+{
+    TokenErr(Type)
+}
+
 #[derive(Debug, Clone)]
 pub struct Lexer
 {
@@ -23,5 +29,10 @@ pub struct Lexer
 pub trait LFuncs
 {
     fn new_lexer(info: FileInfo) -> Self;
-    fn lex(&mut self) -> Type;
+    fn lex(&mut self) -> Result<Type, LError>;
+}
+
+pub trait LErrorFuncs
+{
+    fn token_error(err: Type) -> LError;
 }

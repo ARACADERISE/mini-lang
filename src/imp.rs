@@ -1,14 +1,21 @@
+// Importing of the code
 use super::starter;
 use super::lexer;
 
+// Lexer
 use lexer::Lexer;
 use lexer::LFuncs;
 use lexer::Type;
+use lexer::LError;
+use lexer::LErrorFuncs;
+
+// File Info
 use starter::FileInfo;
 use starter::FErrors;
 use starter::ErrFuncs;
 use starter::Funcs;
 
+// Standard Imports
 use std::path::PathBuf;
 use std::env;
 use std::io;
@@ -85,8 +92,16 @@ impl LFuncs for Lexer
         }
     }
 
-    fn lex(&mut self) -> Type
+    fn lex(&mut self) -> Result<Type, LError>
     {
-        Type::Def
+        Ok(Type::Def)
+    }
+}
+
+impl LErrorFuncs for LError
+{
+    fn token_error(err: Type) -> LError
+    {
+        LError::TokenErr(err)
     }
 }
