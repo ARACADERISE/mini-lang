@@ -12,6 +12,7 @@ pub enum Type
     Comma,
     Equals,
     K_LET,
+    K_PRINT,
     VarName,
     T_LB, // {
     T_RB, // }

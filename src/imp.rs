@@ -120,12 +120,16 @@ impl LFuncs for Lexer
         let mut keyword: String = String::new();
         loop
         {
-            if self.info.content.chars().nth(self.index).unwrap() != ' '
+            match self.info.content.chars().nth(self.index)
             {
-                keyword.push(self.info.content.chars().nth(self.index).unwrap());
-            } else 
-            {
-                break;
+                Some(x) => {
+                    if x != ' ' {
+                        keyword.push(x);
+                    } else {
+                        break;
+                    }
+                },
+                None => break
             }
 
             self.index += 1;
@@ -156,7 +160,7 @@ impl LFuncs for Lexer
                 }
                 Some(',') => {
                     return Ok(self.advance_with_token(Type::Comma, ','.to_string()));
-                }
+                },
                 Some('\t') => {
                     loop {
                         self.index += 1;
@@ -184,6 +188,7 @@ impl LFuncs for Lexer
 
                                 match k.as_str() {
                                     "let" => return Ok(self.advance_with_token(Type::K_LET, k)),
+                                    "print" => return Ok(self.advance_with_token(Type::K_PRINT, k)),
                                     _ => return Ok(self.advance_with_token(Type::VarName, k))
                                 }
                             }
@@ -292,15 +297,25 @@ impl PFuncs for Parser
     {
         self.lex = lexer;
 
-        match self.lex.token
-        {
-            Type::K_LET => {
-                match self.parse_var_def() {
-                    Ok(t) => return Ok(t),
-                    Err(t) => return Err(t)
-                }
-            },
-            _ => {}
+        loop {
+            match self.lex.token
+            {
+                Type::K_LET => {
+                    match self.parse_var_def() {
+                        Ok(_) => {
+                        },
+                        Err(t) => {
+                            return Err(t);
+                        }
+                    }
+                    continue;
+                },
+                Type::K_PRINT => {
+                    println!("Printing!");
+                    break;
+                },
+                _ => break
+            }
         }
 
         Ok(self.clone())

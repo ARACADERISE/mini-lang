@@ -35,12 +35,11 @@ fn main()
                                             _ => {
                                                 match parser.parse(lexer.clone())
                                                 {
-                                                    Ok(p) => {
-                                                        println!("Successfull: {:?}", p);
-                                                    }
+                                                    Ok(mut p) => {
+                                                        
+                                                    },
                                                     Err(e) => panic!("{:?}", e)
                                                 }
-                                                break;
                                             }
                                         }
                                         //break;
