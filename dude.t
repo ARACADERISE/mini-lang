@@ -1,4 +1,6 @@
 print "Hello, World"
-let arr = { 
-	0, 1, 2
-};
+print "This is my new language"
+
+let name = "Aidan"
+
+print name

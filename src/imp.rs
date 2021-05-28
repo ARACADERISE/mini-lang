@@ -2,12 +2,19 @@
 use super::starter;
 use super::lexer;
 use super::parser;
+use super::ast;
 
 // Parser
 use parser::Parser;
 use parser::PFuncs;
 use parser::PError;
 use parser::PErrorFuncs;
+
+// AST
+use ast::Ast;
+use ast::AstFuncs;
+use ast::AstError;
+use ast::AstErrorFuncs;
 
 // Lexer
 use lexer::Lexer;
@@ -23,6 +30,7 @@ use starter::ErrFuncs;
 use starter::Funcs;
 
 // Standard Imports
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::env;
 use std::io;
@@ -236,6 +244,19 @@ impl LFuncs for Lexer
     }
 }
 
+impl AstErrorFuncs for AstError
+{
+    fn no_var(varName: String) -> AstError
+    {
+        AstError::NoSuchVar(varName)
+    }
+
+    fn out_of_bounds(index: usize) -> AstError
+    {
+        AstError::IndexOutOfBounds(index)
+    }
+}
+
 impl LErrorFuncs for LError
 {
     fn token_error(err: Type) -> LError
@@ -252,12 +273,64 @@ impl PErrorFuncs for PError
     }
 }
 
+impl AstFuncs for Ast
+{
+    fn new_ast() -> Self
+    {
+        Self {
+            sequence: Vec::new(),
+            var_names: Vec::new(),
+            array_values: BTreeMap::new(),
+            var_values: Vec::new(),
+            to_print: Vec::new()
+        }
+    }
+
+    fn i_print(&mut self) -> Result<Ast, AstError>
+    {
+        println!("{}", self.to_print[0]);
+        self.to_print.remove(0);
+        Ok(self.clone())
+    }
+
+    fn i_variable(&mut self) -> Result<Ast, AstError>
+    {
+        if self.var_names.len() == self.var_values.len()
+        {
+            return Ok(self.clone())
+        }
+
+        for i in self.var_names.iter()
+        {
+            if self.array_values.contains_key(i)
+            {
+                continue;
+            }
+        }
+        Ok(self.clone())
+    }
+
+    fn go_through(&mut self) -> Result<Ast, AstError>
+    {
+        for i in &self.sequence.clone()
+        {
+            match i {
+                Type::VarName => self.i_variable(),
+                Type::K_PRINT => self.i_print(),
+                _ => return Err(AstError::no_var("".to_string())) // we shouldn't have a problem.
+            };
+        }
+        Ok(self.clone())
+    }
+}
+
 impl PFuncs for Parser
 {
     fn new_parser(lexer: Lexer) -> Self
     {
         Self {
-            lex: lexer
+            lex: lexer,
+            AST: Ast::new_ast()
         }
     }
 
@@ -279,6 +352,7 @@ impl PFuncs for Parser
             match self.lex.token
             {
                 Type::VarName => {
+                    self.AST.var_names.push(self.lex.token_val.clone());
                     self.get_next_token()
                 },
                 _ => return Err(PError::unexpected_token(self.lex.token.clone()))
@@ -293,16 +367,19 @@ impl PFuncs for Parser
                     Type::T_LB => {
                         self.get_next_token();
 
+                        let mut arr: Vec<String> = Vec::new();
                         loop {
                             match self.lex.token
                             {
                                 Type::NUM => {
+                                    arr.push(self.lex.token_val.clone());
                                     self.get_next_token();
                                 },
                                 Type::Comma => {
                                     self.get_next_token();
                                 },
                                 Type::T_RB => {
+                                    self.AST.array_values.insert(self.AST.var_names[self.AST.var_names.len() - 1].clone(), arr);
                                     break;
                                 }
                                 _ => return Err(PError::unexpected_token(self.lex.token.clone()))
@@ -313,19 +390,26 @@ impl PFuncs for Parser
                         match self.lex.token
                         {
                             Type::Semi => {
+                                self.AST.sequence.push(Type::VarName);
                                 return Ok(self.clone());
                             },
                             Type::EOF => {
+                                self.AST.sequence.push(Type::VarName);
                                 return Ok(self.clone());
                             },
                             _ => return Err(PError::unexpected_token(self.lex.token.clone()))
                         }
+                    },
+                    Type::Str => {
+                        self.AST.var_values.push(self.lex.token_val.clone());
                     },
                     _ => return Err(PError::unexpected_token(self.lex.token.clone())),
                 }
 
             }
         }
+
+        self.AST.sequence.push(Type::VarName);
         Ok(self.clone())
     }
 
@@ -336,10 +420,15 @@ impl PFuncs for Parser
         match self.lex.token
         {
             Type::Str => {
-                println!("{}", self.lex.token_val);
+                self.AST.to_print.push(self.lex.token_val.clone());
+            },
+            Type::VarName => {
+                self.AST.to_print.push(self.AST.var_values[self.AST.var_values.len() - 1].clone());
             },
             _ => return Err(PError::unexpected_token(self.lex.token.clone()))
         }
+
+        self.AST.sequence.push(Type::K_PRINT);
 
         Ok(self.clone())
     }

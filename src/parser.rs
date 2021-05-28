@@ -1,4 +1,7 @@
 use super::lexer;
+use super::ast;
+
+use ast::Ast;
 
 use lexer::Lexer;
 use lexer::Type;
@@ -12,7 +15,8 @@ pub enum PError
 #[derive(Debug, Clone)]
 pub struct Parser
 {
-    pub lex: Lexer
+    pub lex: Lexer,
+    pub AST: Ast
 }
 
 pub trait PFuncs

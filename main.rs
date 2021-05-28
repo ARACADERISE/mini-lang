@@ -4,6 +4,9 @@ use src::starter;
 use starter::FileInfo;
 use starter::Funcs;
 
+use src::ast;
+use ast::AstFuncs;
+
 use src::lexer;
 use lexer::Lexer;
 use lexer::LFuncs;
@@ -47,6 +50,8 @@ fn main()
                                     Err(token) => println!("{:?}", token)
                                 }
                             }
+
+                            parser.AST.go_through();
                         },
                         Err(E) => println!("{:?}", E)
                     }
