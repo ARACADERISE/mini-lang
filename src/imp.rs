@@ -135,7 +135,7 @@ impl LFuncs for Lexer
             match self.info.content.chars().nth(self.index)
             {
                 Some(x) => {
-                    if x != ' ' {
+                    if x != '|' && x != ' ' {
                         keyword.push(x);
                     } else {
                         break;
@@ -204,6 +204,21 @@ impl LFuncs for Lexer
                 },
                 Some(',') => {
                     return Ok(self.advance_with_token(Type::Comma, ','.to_string()));
+                },
+                Some('*') => {
+                    loop {
+                        self.index += 1;
+
+                        match self.info.content.chars().nth(self.index)
+                        {
+                            Some('*') => {
+                                break;
+                            }
+                            None => break,
+                            _ => {}
+                        }
+                    }
+                    self.index += 1
                 },
                 Some('\t') => {
                     loop {
@@ -402,6 +417,13 @@ impl PFuncs for Parser
                     },
                     Type::Str => {
                         self.AST.var_values.push(self.lex.token_val.clone());
+                        self.get_next_token();
+
+                        match self.lex.token
+                        {
+                            Type::Semi => return Ok(self.clone()),
+                            _ => {}
+                        }
                     },
                     _ => return Err(PError::unexpected_token(self.lex.token.clone())),
                 }
@@ -429,6 +451,13 @@ impl PFuncs for Parser
         }
 
         self.AST.sequence.push(Type::K_PRINT);
+
+        self.get_next_token();
+        match self.lex.token
+        {
+            Type::Semi => return Ok(self.clone()),
+            _ => {}
+        }
 
         Ok(self.clone())
     }
