@@ -1,10 +1,13 @@
-print "Hello, World"
-print "This is my new language"
+* This is a comment. .t(TimeScript) allows single lines comments, only*
 
+* Variables declared with let *
 let name = "Aidan"
+let secondName = "Bob"
 
-* the | is needed after the "keyword" name *
+* You can print strings *
+print "Hello, World"
+
+* You can also print variable values *
+* Note: The | is needed so the lexer knows when to stop *
 print name|
-print "Done"
-print name|
-print name|
+print secondName|
